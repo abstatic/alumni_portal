@@ -5,36 +5,31 @@ from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 # model for user (alumni)
+class Courses(models.Model):
+    course_id = models.AutoField(primary_key=True)
+    course_name = models.CharField(max_length=20)
+    short_name = models.CharField(max_length=20, blank=True)
+
+class Branches(models.Model):
+    course_id = models.AutoField(primary_key=True)
+    branch_name = models.CharField(max_length=20)
+    short_name = models.CharField(max_length=20, blank=True)
+
 class Alumni(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, 
     on_delete=models.CASCADE)
 
-    # Choices for Branches
-    BRANCHES = (
-        ('CSE', 'Computer Science Engineering'),
-        ('CSD', 'CSD')
-    )
-
-    # Choices for Courses    
-    # First value is value stored in DB
-    COURSES = (
-        ('PhD', 'PhD'),
-        ('BTech', 'BTech'),
-        ('MTech', 'MTech')
-    )
-
     alumni_id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=20, blank=False)
-    last_name = models.CharField(max_length=20, blank=False)
-    email = models.EmailField(unique=True, blank=False)
 
     roll_num = models.IntegerField(blank=True, unique=True)
 
-    branch = models.CharField(max_length=5, blank=False, choices=BRANCHES)
-    course = models.CharField(max_length=5, blank=False, choices=COURSES)
+    branch = models.ForeignKey(Courses, on_delete=models.SET_NULL, null=True)
+    course = models.ForeignKey(Branches, on_delete=models.SET_NULL, null=True)
 
     passing_year = models.IntegerField(blank=False)
     contact_number = models.IntegerField(blank=False)
+
+    blockList = models.ManyToManyField('Alumni')
 
 # model for photos
 class Photo(models.Model):
@@ -75,3 +70,5 @@ admin.site.register(Post)
 admin.site.register(Job)
 admin.site.register(Alumni)
 admin.site.register(Photo)
+admin.site.register(Courses)
+admin.site.register(Branches)

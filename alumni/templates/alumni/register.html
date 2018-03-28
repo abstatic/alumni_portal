@@ -1,0 +1,13 @@
+{% extends 'alumni/base.html' %}
+
+{% block content %}
+<h1>Alumni Registration Form</h1>
+<br>
+<form method="POST">
+    {% csrf_token %}
+    <table class="table">
+    {{ form.as_table }}
+    </table>
+    <button class="btn btn-primary" type="submit">Submit</button>
+</form>
+{% endblock %}

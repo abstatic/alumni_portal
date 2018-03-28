@@ -1,13 +1,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from .forms import AlumniRegistrationForm, PostForm, JobForm
 
 # Create your views here.
+@login_required
 def index(request):
     """
     Logged In -> Redirect to the dashboard page
     Not Logged In -> Render the login page
     """
-    return render(request, 'alumni/index.html', {'q': 1})
+    return render(request, 'alumni/index.html', {'title': 'Dashboard'})
 
 # add the logged in decorator
 def dashboard_view(request):
@@ -21,7 +24,11 @@ def register(request):
     If request type is POST -> Process the form
     If request type is GET -> render the registration page
     """
-    return HttpResponse("REGISTER VIEW")
+    if request.method == 'POST':
+        return HttpResponse("REGISTER VIEW")
+    else:
+        form = AlumniRegistrationForm()
+        return render(request, 'alumni/register.html', {'form': form, 'title': 'Register'})
 
 # add the logged in decorator
 def search(request):
@@ -85,3 +92,15 @@ def unsubscribe_post(request):
     unsubscribe from an event/post
     """
     return HttpResponse("UNSUBS POST VIEW")
+
+def add_job(request):
+    """
+    get -> render the job form
+    post -> handle the job form
+    """
+    pass
+
+def events(request):
+    """
+    """
+    return HttpResponse("EVENTS VIEW")
