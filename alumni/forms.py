@@ -50,13 +50,13 @@ class AlumniRegistrationForm(forms.Form):
 
     b_choices = []
     for i in range(len(BRANCHES)):
-        t_tuple = (i, BRANCHES[i])
+        t_tuple = (BRANCHES[i], BRANCHES[i])
         b_choices.append(t_tuple)
     b_choices = tuple(b_choices)
 
     c_choices = []
     for i in range(len(COURSES)):
-        t_tuple = (i, COURSES[i])
+        t_tuple = (COURSES[i], COURSES[i])
         c_choices.append(t_tuple)
     c_choices = tuple(c_choices)
 
@@ -78,11 +78,16 @@ class AlumniRegistrationForm(forms.Form):
         label = 'Roll Num (Optional)'
     )
 
-    branch = forms.ChoiceField(choices=b_choices, label="Select branch", widget=forms.Select(), required=True)
+    branch = forms.ChoiceField(choices=b_choices, label="Select Branch", widget=forms.Select(), required=True)
     course = forms.ChoiceField(choices=c_choices, label="Select Course", widget=forms.Select(), required=True)
-
     passing_year = forms.IntegerField(required=True)
     contact_number = forms.CharField(required=True, max_length=12)
+
+    user_name = forms.CharField(label="Username ")
+    password = forms.CharField(label="Password ", widget=forms.PasswordInput())
+    confirm_password = forms.CharField(label="Confirm Password", widget=forms.PasswordInput())
+    email = forms.EmailField(label="Institute Email")
+
 
 
 

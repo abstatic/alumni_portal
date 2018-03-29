@@ -1,7 +1,11 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
 from .forms import AlumniRegistrationForm, PostForm, JobForm
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django import forms
+from .models import Alumni, Courses, Branches
 
 # Create your views here.
 @login_required
@@ -25,7 +29,60 @@ def register(request):
     If request type is GET -> render the registration page
     """
     if request.method == 'POST':
-        return HttpResponse("REGISTER VIEW")
+        form = AlumniRegistrationForm(request.POST)
+        error = ""
+
+        if form.is_valid():
+            alumniData = form.cleaned_data
+
+            first_name     = alumniData['first_name']
+            last_name      = alumniData['last_name']
+            roll_num       = alumniData['roll_num']
+            passing_year   = alumniData['passing_year']
+            contact_number = alumniData['contact_number']
+            branch         = Branches.objects.get(branch_name=alumniData['branch'])
+            course         = Courses.objects.get(course_name=alumniData['course'])
+
+            user_name      = alumniData['user_name']
+            password       = alumniData['password']
+            confirm_pass   = alumniData['confirm_password']
+            email          = alumniData['email']
+
+            if password != confirm_pass:
+                error = "Passwords don't match"
+                return render(request, 'alumni/register.html', {
+                    'form': form, 
+                    'title': 'Register', 
+                    'error': error
+                })
+
+            if not (User.objects.filter(username=user_name).exists() or
+                User.objects.filter(email=email).exists()):
+                
+                User.objects.create_user(user_name, email, password)
+
+                a_user = authenticate(username=user_name, passwordd=password)
+
+                user = User.objects.get(email=email)
+
+
+                al = Alumni.objects.create(
+                    user           = user,
+                    roll_num       = roll_num,
+                    branch         = branch,
+                    course         = course,
+                    passing_year   = passing_year,
+                    contact_number = contact_number
+                )
+
+                return HttpResponseRedirect('/')
+            else:
+                error = "Username or email already exists"
+                return render(request, 'alumni/register.html', {
+                    'form': form, 
+                    'title': 'Register', 
+                    'error': error
+                })
     else:
         form = AlumniRegistrationForm()
         return render(request, 'alumni/register.html', {'form': form, 'title': 'Register'})

@@ -3,6 +3,9 @@
 {% block content %}
 <h1>Alumni Registration Form</h1>
 <br>
+<div>
+    {{ error }}
+</div>
 <form method="POST">
     {% csrf_token %}
     <table class="table">

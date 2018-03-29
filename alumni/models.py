@@ -23,11 +23,11 @@ class Alumni(models.Model):
 
     roll_num = models.IntegerField(blank=True, unique=True)
 
-    branch = models.ForeignKey(Courses, on_delete=models.SET_NULL, null=True)
-    course = models.ForeignKey(Branches, on_delete=models.SET_NULL, null=True)
+    branch = models.ForeignKey(Branches, on_delete=models.SET_NULL, null=True)
+    course = models.ForeignKey(Courses, on_delete=models.SET_NULL, null=True)
 
     passing_year = models.IntegerField(blank=False)
-    contact_number = models.IntegerField(blank=False)
+    contact_number = models.CharField(blank=False, max_length=13)
 
     blockList = models.ManyToManyField('Alumni')
 
