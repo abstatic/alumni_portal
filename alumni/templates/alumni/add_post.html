@@ -1,0 +1,16 @@
+{% extends 'alumni/base.html' %}
+
+{% block content %}
+<h1>Add your post</h1>
+<div>
+    {{ error }}
+</div>
+<form method = "POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <table class="table">
+        {{ form.as_table }}
+        {{ img_form.as_table }}
+    </table>
+    <button class="btn btn-primary" type="submit">Post</button>
+</form>
+{% endblock %}

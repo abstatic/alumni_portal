@@ -1,27 +1,23 @@
-from .forms import AlumniRegistrationForm, PostForm, JobForm
+from .forms import AlumniRegistrationForm, PostForm, JobForm, SearchForm, ImageForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django import forms
-from .models import Alumni, Courses, Branches
+from .models import Alumni, Courses, Branches, Images, Post
+from django.forms import formset_factory
 
 # Create your views here.
 @login_required
 def index(request):
-    """
-    Logged In -> Redirect to the dashboard page
-    Not Logged In -> Render the login page
-    """
-    return render(request, 'alumni/index.html', {'title': 'Dashboard'})
 
-# add the logged in decorator
-def dashboard_view(request):
-    """
-    Show the dashboard
-    """
-    return HttpResponse("DASHBOARD VIEW")
+    posts = Post.objects.all().order_by('timestamp')[:10]
+
+    return render(request, 'alumni/index.html', {
+        'title': 'Dashboard',
+        'posts': posts
+        })
 
 def register(request):
     """
@@ -59,7 +55,9 @@ def register(request):
             if not (User.objects.filter(username=user_name).exists() or
                 User.objects.filter(email=email).exists()):
                 
-                User.objects.create_user(user_name, email, password)
+                User.objects.create_user(
+                    user_name, email, password, 
+                    first_name=first_name, last_name=last_name)
 
                 a_user = authenticate(username=user_name, passwordd=password)
 
@@ -87,12 +85,67 @@ def register(request):
         form = AlumniRegistrationForm()
         return render(request, 'alumni/register.html', {'form': form, 'title': 'Register'})
 
-# add the logged in decorator
+@login_required
 def search(request):
     """
     search with the given filters in the request
     """
-    return HttpResponse("SEARCH VIEW")
+    if request.method == "POST":
+        form = SearchForm(request.POST)
+
+        if form.is_valid():
+            search_data = form.cleaned_data
+
+
+
+        return render(request, 'alumni/search.html', {
+            'title': 'Search Results',
+            'search_form': False
+            })
+    else:
+        form = SearchForm()
+        return render(request, 'alumni/search.html', {
+            'form': form, 
+            'title': 'Search Alumni',
+            'search_form': True
+            })
+
+@login_required
+def add_post(request):
+    if request.method == "POST":
+        post_form = PostForm(request.POST, prefix="post")
+        img_form = ImageForm(request.POST, request.FILES , prefix="img")
+
+        if post_form.is_valid() and img_form.is_valid():
+            post_form_inst = post_form.save(commit=False)
+            post_form_inst.author = Alumni.objects.get(user=request.user)
+            post_form_inst.save()
+
+            img_form_inst = img_form.save(commit=False)
+            img_form_inst.post = post_form_inst
+            img_form_inst.save()
+
+            return HttpResponseRedirect("/")
+        else:
+            error = "Invalid Form Filled"
+            form = PostForm(prefix="post")
+            img_form = ImageForm(prefix="img")
+            return render(request, 'alumni/add_post.html', {
+                'form': form, 
+                'title': 'Add Post',
+                'img_form': img_form,
+                'error': error
+                })
+
+
+    else:
+        form = PostForm(prefix="post")
+        img_form = ImageForm(prefix="img")
+        return render(request, 'alumni/add_post.html', {
+            'form': form, 
+            'title': 'Add Post',
+            'img_form': img_form
+            })
 
 def jobs(request):
     """
@@ -101,13 +154,6 @@ def jobs(request):
     Use Cache for fetching
     """
     return HttpResponse("JOBS VIEW")
-
-def posts(request):
-    """
-    render/return ? the latest posts
-    Take in to account the user blocking preferences
-    """
-    return HttpResponse("POSTS VIEW")
 
 def block_user(request):
     """

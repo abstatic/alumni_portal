@@ -1,0 +1,21 @@
+{% extends 'alumni/base.html' %}
+
+{% block content %}
+{% if search_form %}
+<h1>Search for Alumni</h1>
+<br>
+<div>
+    {{ error }}
+</div>
+<form method="POST">
+    {% csrf_token %}
+    <table class="table">
+        {{ form.as_table }}
+    </table>
+    <button class="btn btn-primary" type="submit">Search</button>
+</form>
+
+{% else %}
+<h1>Search Results</h1>
+{% endif %}
+{% endblock %}

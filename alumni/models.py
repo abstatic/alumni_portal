@@ -31,17 +31,17 @@ class Alumni(models.Model):
 
     blockList = models.ManyToManyField('Alumni')
 
-# model for photos
-class Photo(models.Model):
-    photo_id = models.AutoField(primary_key=True)
-    path = models.CharField(max_length=100, blank=False)
-
 # model for post
 class Post(models.Model):
     post_id = models.AutoField(primary_key=True)
     author = models.ForeignKey(Alumni, on_delete=models.CASCADE)
+    title = models.CharField(max_length=128, default="")
+    timestamp = models.DateTimeField(auto_now_add=True, blank=True)
     content = models.TextField()
-    photos = models.ManyToManyField(Photo)
+
+class Images(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.SET_NULL, default=None, null=True)
+    image = models.ImageField(upload_to="photos/%Y/%m/%d/", verbose_name='Image')
 
 # model for job
 class Job(models.Model):
@@ -69,6 +69,6 @@ admin.site.register(Event)
 admin.site.register(Post)
 admin.site.register(Job)
 admin.site.register(Alumni)
-admin.site.register(Photo)
+admin.site.register(Images)
 admin.site.register(Courses)
 admin.site.register(Branches)
