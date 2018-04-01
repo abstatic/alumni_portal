@@ -1,0 +1,37 @@
+{% extends 'alumni/base.html' %}
+
+{% block content %}
+<table class="table">
+    <tr>
+        <td rowspan="4" class="col-md-3">
+            <img width="200px" src="{{ alumni.pro_pic.url }}" alt="">
+        </td>
+        <td>{{ alumni.user.first_name }} {{ alumni.user.last_name }}</td>
+    </tr>
+    <tr>
+        <td>{{ alumni.course.course_name }}, {{ alumni.branch.branch_name }}</td>
+    </tr>
+    <tr>
+        <td>Passed out in {{ alumni.passing_year }}</td>
+    </tr>
+    <tr>
+        <td>{{ alumni.user.email }}</td>
+    </tr>
+    <tr>
+        <td>Bio</td>
+        <td>alumni.bio</td>
+    </tr>
+    <tr>
+        <td>Roll Number</td>
+        <td>{{ alumni.roll_num }}</td>
+    </tr>
+    <tr>
+        <td>Joined On</td>
+        <td>{{ alumni.join }}</td>
+    </tr>
+    <tr>
+        <td>Contact Number</td>
+        <td>{{ alumni.contact_number }}</td>
+    </tr>
+</table>
+{% endblock %}

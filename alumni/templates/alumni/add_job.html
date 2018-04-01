@@ -1,7 +1,7 @@
 {% extends 'alumni/base.html' %}
 
 {% block content %}
-<h1>{{ title }}</h1>
+<h1>Add Job</h1>
 <div>
     {{ error }}
 </div>
@@ -9,8 +9,7 @@
     {% csrf_token %}
     <table class="table">
         {{ form.as_table }}
-        {{ img_form.as_table }}
     </table>
-    <button class="btn btn-primary" type="submit">Post</button>
+    <button class="btn btn-primary" type="submit">Add Job</button>
 </form>
 {% endblock %}

@@ -29,7 +29,11 @@ class Alumni(models.Model):
     passing_year = models.IntegerField(blank=False)
     contact_number = models.CharField(blank=False, max_length=13)
 
-    blockList = models.ManyToManyField('Alumni')
+    join = models.DateTimeField(auto_now_add=True)
+    bio = models.CharField(max_length=350, default="")
+    pro_pic = models.ImageField(upload_to="photos/profile_pic", verbose_name="DP", null=True)
+
+    blockList = models.ManyToManyField('Alumni', blank=True)
 
 # model for post
 class Post(models.Model):
@@ -40,16 +44,18 @@ class Post(models.Model):
     content = models.TextField()
 
 class Images(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.SET_NULL, default=None, null=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, default=None, null=True)
     image = models.ImageField(upload_to="photos/%Y/%m/%d/", verbose_name='Image')
 
 # model for job
 class Job(models.Model):
     job_id = models.AutoField(primary_key=True)
     author = models.ForeignKey(Alumni, on_delete=models.CASCADE)
+    title = models.CharField(max_length=128, default="")
     company = models.CharField(max_length=100, blank=False)
+    content = models.TextField()
     contact = models.CharField(max_length=50)
-    content = models.CharField(max_length=300)
+    timestamp= models.DateTimeField(auto_now_add=True)
 
 # model for event
 class Event(models.Model):

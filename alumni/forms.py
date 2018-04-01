@@ -1,29 +1,17 @@
 from django import forms
-from .models import Branches, Courses, Images, Post
+from .models import Branches, Courses, Images, Post, Job
 import datetime
-from .widgets import AdvancedFileInput
 
-class JobForm(forms.Form):
-    content = forms.CharField(
-        widget=forms.Textarea,
-        required=True,
-        label='Job Description'
-    )
+class JobForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = {'title', 'company', 'content', 'contact'}
+        labels = {
+            "content": "Job Description",
+            "title": "Job Title"
+        }
+    field_order = ['title', 'company', 'content', 'contact']
 
-    company = forms.CharField(
-        required=True,
-        label='Company Name'
-    )
-
-    author = forms.CharField(
-        required=True,
-        label='Author Name'
-    )
-
-    contact = forms.CharField(
-        required=True,
-        label='Contact Details'
-    )
 
 class PostForm(forms.ModelForm):
     class Meta:

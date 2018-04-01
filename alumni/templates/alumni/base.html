@@ -8,7 +8,6 @@
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <script src="{% static 'js/jquery.js' %}"></script>
         <script src="{% static 'js/bootstrap.js' %}"></script>
-        <script src="{% static 'js/custom.js' %}"></script>
     </head>
 
     <body>
@@ -21,7 +20,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Alumni Portal</a>
+                    <a class="navbar-brand" href="/">Alumni Portal</a>
                 </div>
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
@@ -41,9 +40,9 @@
                             <ul class="dropdown-menu">
                                 <li><a href="#">Edit Profile</a></li>
                                 <li><a href="/addpost">Add Post</a></li>
-                                <li><a href="/editpost">Edit Post</a></li>
+                                <li><a href="/myposts">Your Posts</a></li>
                                 <li><a href="/addjob">Add Job</a></li>
-                                <li><a href="/editjob">Edit Job</a></li>
+                                <li><a href="/myjobs">Your Jobs</a></li>
                             </ul>
                         </li>
                         <li>
@@ -62,5 +61,6 @@
         {% endblock %}
         </div>
 
+        <script src="{% static 'js/my.js' %}"></script>
     </body>
 </html>

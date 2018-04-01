@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django import forms
-from .models import Alumni, Courses, Branches, Images, Post
+from .models import Alumni, Courses, Branches, Images, Post, Job
 from django.forms import formset_factory
 
 # Create your views here.
@@ -14,10 +14,28 @@ def index(request):
 
     posts = Post.objects.all().order_by('timestamp')[:10]
 
+    import pdb
+    pdb.set_trace()
+
     return render(request, 'alumni/index.html', {
         'title': 'Dashboard',
         'posts': posts
         })
+
+@login_required
+def my_jobs(request):
+    pass
+
+@login_required
+def my_posts(request):
+    alum = Alumni.objects.get(user=request.user)
+    posts = Post.objects.filter(author=alum)
+
+    return render(request, 'alumni/index.html', {
+        'title': "Your posts",
+        'posts': posts,
+        'my_posts': True
+    })
 
 def register(request):
     """
@@ -136,16 +154,61 @@ def add_post(request):
                 'img_form': img_form,
                 'error': error
                 })
-
-
     else:
-        form = PostForm(prefix="post")
+        title = 'Add Post'
+        pid = None
+        if 'pid' in request.GET:
+            pid = request.GET['pid']
+        
+        if pid:
+            try:
+                post = Post.objects.get(post_id=pid)
+                form = PostForm(prefix="post", instance=post)
+            except:
+                return HttpResponseRedirect('/')
+            title = 'Edit Post'
+        else:
+            form = PostForm(prefix="post")
+
         img_form = ImageForm(prefix="img")
         return render(request, 'alumni/add_post.html', {
             'form': form, 
-            'title': 'Add Post',
+            'title': title,
             'img_form': img_form
             })
+
+@login_required
+def post(request):
+    if 'pid' in request.GET:
+        pid = request.GET['pid']
+    else:
+        return HttpResponseRedirect('/')
+
+    try:
+        post = Post.objects.get(post_id=pid)
+    except:
+        return HttpResponseRedirect('/')
+
+    return render(request, 'alumni/post.html', {
+        'post': post,
+        'title': 'Post'
+    })
+
+@login_required
+def profile(request):
+    if 'uid' in request.GET:
+        u_id = request.GET['uid']
+    else:
+        return HttpResponseRedirect('/')
+
+    try:
+        alumni = Alumni.objects.get(user__id=u_id)
+        return render(request, 'alumni/profile.html', {
+            'alumni': alumni,
+            'title': 'Alumni Profile'
+        })
+    except:
+        return HttpResponseRedirect('/')
 
 def jobs(request):
     """
@@ -153,7 +216,10 @@ def jobs(request):
     depending on the page num, show relevant jobs
     Use Cache for fetching
     """
-    return HttpResponse("JOBS VIEW")
+    jobs = Job.objects.all()[:10]
+    return render(request, 'alumni/jobs.html', {
+        'jobs': jobs
+    })
 
 def block_user(request):
     """
@@ -197,11 +263,30 @@ def unsubscribe_post(request):
     return HttpResponse("UNSUBS POST VIEW")
 
 def add_job(request):
-    """
-    get -> render the job form
-    post -> handle the job form
-    """
-    pass
+    if request.method == "POST":
+        job_form = JobForm(request.POST, prefix="job")
+
+        if job_form.is_valid():
+            job_form_inst = job_form.save(commit=False)
+            job_form_inst.author = Alumni.objects.get(user=request.user)
+            job_form_inst.save()
+
+            return HttpResponseRedirect("/jobs")
+        else:
+            error = "Invalid Form Filled"
+            form = JobForm(prefix="job")
+            return render(request, 'alumni/add_job.html', {
+                'form': form, 
+                'title': 'Add Job',
+                'error': error
+                })
+    else:
+        form = JobForm(prefix="job")
+        return render(request, 'alumni/add_job.html', {
+            'form': form, 
+            'title': 'Add Job',
+            })
+
 
 def events(request):
     """

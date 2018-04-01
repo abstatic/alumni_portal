@@ -4,9 +4,9 @@
 {% for post in posts %}
 <div class="panel panel-info">
     <div class="panel-heading">
-        <a href="posts/{{ post.post_id }}"><h3>{{ post.title }}</h3></a>
+        <a href="post?pid={{ post.post_id }}"><h3>{{ post.title }}</h3></a>
             <p class="text-muted">
-                <a href="users/{{ post.author.user }}">
+                <a href="users?uid={{ post.author.user.id }}">
                     {{ post.author.user.first_name }} 
                     {{ post.author.user.last_name }}
                 </a>
@@ -15,16 +15,26 @@
             </p>
     </div>
     <div class="panel-body"> 
-        {{ post.content|truncatechars:200 }}
+        {{ post.content }}
     </div>
+    
     {% for img in post.images_set.all %}
-    <img width="250px" src="{{ img.image.url }}" alt="{{ img.image.filename }}" class="img-thumbnail">
+    <img width="250px" src="{{ img.image.url }}" class="img-thumbnail">
     {% endfor %}
+
+    {% if not my_posts %}
     <div class="panel-footer">
         Don't like this post? 
         <a href="block?by={{ request.user }}&&block={{ post.author.user }}">Block User</a> or 
         <a href="report/{{ post.post_id }}">Report Post</a>
     </div>
+    {% else %}
+    <div class="panel-footer">
+        <a href="delete?pid={{ post.post_id }}">Delete Post</a>
+        <br>
+        <a href="editpost?pid={{ post.post_id }}">Edit Post</a>
+    </div>
+    {% endif %}
 </div>
 <br><br>
 {% endfor %}

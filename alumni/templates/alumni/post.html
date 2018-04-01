@@ -3,9 +3,9 @@
 {% block content %}
 <div class="panel panel-info">
     <div class="panel-heading">
-        <a href="posts/{{ post.post_id }}"><h3>{{ post.title }}</h3></a>
+        <a href="post?pid={{ post.post_id }}"><h3>{{ post.title }}</h3></a>
             <p class="text-muted">
-                <a href="users/{{ post.author.user }}">
+                <a href="users?uid={{ post.author.user.id }}">
                     {{ post.author.user.first_name }} 
                     {{ post.author.user.last_name }}
                 </a>
@@ -14,10 +14,12 @@
             </p>
     </div>
     <div class="panel-body"> 
-        {{ post.content|truncatechars:200 }}
+        {{ post.content }}
     </div>
     {% for img in post.images_set.all %}
-    <img width="250px" src="{{ img.image.url }}" alt="{{ img.image.filename }}" class="img-thumbnail">
+    <a href="#" id="pop">
+        <img id="imageresource" width="250px" src="{{ img.image.url }}" alt="{{ img.image.filename }}" class="img-thumbnail">
+    </a>
     {% endfor %}
     <div class="panel-footer">
         Don't like this post? 
@@ -25,5 +27,13 @@
         <a href="report/{{ post.post_id }}">Report Post</a>
     </div>
 </div>
-<br><br>
+<div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: transparent;">
+            <div class="modal-body">
+                <img src="" id="imagepreview">
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
