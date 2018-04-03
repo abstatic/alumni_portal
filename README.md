@@ -8,3 +8,7 @@ Commands for creating the user, database and setting the user password
 4. ALTER USER admin WITH PASSWORD 'helloworld';
 5. CREATE DATABASE alumni_portal OWNER admin;
 
+
+CREATING SUPER USER-
+python manage.py createsuperuser
+

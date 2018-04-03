@@ -1,0 +1,34 @@
+{% extends 'alumni/base.html' %}
+
+{% block content %}
+{% for event in events %}
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <h3>{{ event.name }}</h3>
+            <p class="text-muted">
+                on
+                {{ event.timestamp }}
+            </p>
+    </div>
+    <div class="panel-body"> 
+        <table class="table">
+            <tr>
+                <td>Event Location: </td>
+                <td>{{ event.location }}</td>
+            </tr>
+            <tr>
+                <td>Event Duration: </td>
+                <td>{{ event.duration</td>
+            </tr>
+            <tr>
+                <td>Event Details: </td>
+                <td>{{ event.content }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="panel-footer">
+        Contact: {{ event.contact }}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

@@ -60,10 +60,12 @@ class Job(models.Model):
 # model for event
 class Event(models.Model):
     event_id = models.AutoField(primary_key=True)
+    event_name = models.CharField(max_length=256)
     location = models.CharField(max_length=20)
     timestamp = models.DateTimeField()
     duration = models.CharField(max_length=20)
     content = models.CharField(max_length=400)
+    contact = models.CharField(max_length=100)
 
 # model for message
 class Message(models.Model):

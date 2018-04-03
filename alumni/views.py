@@ -7,15 +7,13 @@ from django.shortcuts import render
 from django import forms
 from .models import Alumni, Courses, Branches, Images, Post, Job
 from django.forms import formset_factory
+from django.utils import timezone
 
 # Create your views here.
 @login_required
 def index(request):
 
     posts = Post.objects.all().order_by('timestamp')[:10]
-
-    import pdb
-    pdb.set_trace()
 
     return render(request, 'alumni/index.html', {
         'title': 'Dashboard',
@@ -131,27 +129,50 @@ def search(request):
 @login_required
 def add_post(request):
     if request.method == "POST":
+
         post_form = PostForm(request.POST, prefix="post")
-        img_form = ImageForm(request.POST, request.FILES , prefix="img")
 
-        if post_form.is_valid() and img_form.is_valid():
-            post_form_inst = post_form.save(commit=False)
-            post_form_inst.author = Alumni.objects.get(user=request.user)
-            post_form_inst.save()
+        pid = None
+        if 'pid' in request.POST:
+            pid = request.POST['pid']
 
-            img_form_inst = img_form.save(commit=False)
-            img_form_inst.post = post_form_inst
-            img_form_inst.save()
+            try:
+                post = Post.objects.get(post_id=pid)
+                post.images_set.all().delete()
+            except:
+                return HttpResponseRedirect("/")
+
+        if post_form.is_valid():
+
+            if pid is not None:
+                post_form = PostForm(request.POST, instance=post, prefix="post")
+                if post_form.is_valid():
+                    post_form.save()
+                post_form_inst = post
+            else:
+                post_form_inst = post_form.save(commit=False)
+                post_form_inst.author = Alumni.objects.get(user=request.user)
+                post_form_inst.save()
+
+            if len(request.FILES) > 0:
+                files = request.FILES.getlist('img-image')
+
+                for f in files:
+                    current_image = Images(
+                        post = post_form_inst,
+                        image = f
+                    )
+                    current_image.save()
 
             return HttpResponseRedirect("/")
         else:
             error = "Invalid Form Filled"
             form = PostForm(prefix="post")
-            img_form = ImageForm(prefix="img")
+            img_form = [ImageForm(prefix="img")]
             return render(request, 'alumni/add_post.html', {
                 'form': form, 
                 'title': 'Add Post',
-                'img_form': img_form,
+                'img_forms': img_form,
                 'error': error
                 })
     else:
@@ -160,21 +181,30 @@ def add_post(request):
         if 'pid' in request.GET:
             pid = request.GET['pid']
         
+        img_forms = []
+
+        # executed in case of EDIT
         if pid:
             try:
                 post = Post.objects.get(post_id=pid)
+                images = post.images_set.all()
                 form = PostForm(prefix="post", instance=post)
+                for img in images:
+                    img_form = ImageForm(prefix="img", instance=img)
+                    img_forms.append(img_form)
+                img_forms.append(ImageForm(prefix="img"))
             except:
                 return HttpResponseRedirect('/')
             title = 'Edit Post'
         else:
             form = PostForm(prefix="post")
+            img_forms.append(ImageForm(prefix="img"))
 
-        img_form = ImageForm(prefix="img")
         return render(request, 'alumni/add_post.html', {
             'form': form, 
             'title': title,
-            'img_form': img_form
+            'img_forms': img_forms,
+            'pid': pid
             })
 
 @login_required
