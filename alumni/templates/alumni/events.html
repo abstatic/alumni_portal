@@ -2,13 +2,28 @@
 
 {% block content %}
 {% for event in events %}
+<h2>{{ title }}</h2>
 <div class="panel panel-info">
     <div class="panel-heading">
-        <h3>{{ event.name }}</h3>
-            <p class="text-muted">
-                on
-                {{ event.timestamp }}
-            </p>
+        <h3>{{ event.event_name }}</h3>
+            <div class="pull-left">
+                <p class="text-muted">
+                    on
+                    {{ event.timestamp }}
+                </p>
+            </div>
+            <div class="pull-right">
+                <p class="pull-right">
+                    {% if request.user.id not in event.subscribed %}
+                    <a href="subscribe?eid={{event.event_id}}">
+                        Subscribe
+                    </a>
+                    {% else %}
+                    <a href="unsubscribe?eid={{event.event_id}}">Unsubscribe</a>
+                    {% endif %}
+                </p>
+            </div>
+            <br>
     </div>
     <div class="panel-body"> 
         <table class="table">
@@ -18,7 +33,7 @@
             </tr>
             <tr>
                 <td>Event Duration: </td>
-                <td>{{ event.duration</td>
+                <td>{{ event.duration }}</td>
             </tr>
             <tr>
                 <td>Event Details: </td>

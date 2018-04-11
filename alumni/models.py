@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.postgres.fields import ArrayField
+from datetime import datetime
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 # model for user (alumni)
@@ -10,10 +12,16 @@ class Courses(models.Model):
     course_name = models.CharField(max_length=20)
     short_name = models.CharField(max_length=20, blank=True)
 
+    def __str__(self):
+        return self.course_name
+
 class Branches(models.Model):
     course_id = models.AutoField(primary_key=True)
     branch_name = models.CharField(max_length=20)
     short_name = models.CharField(max_length=20, blank=True)
+
+    def __str__(self):
+        return self.branch_name
 
 class Alumni(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, 
@@ -21,19 +29,28 @@ class Alumni(models.Model):
 
     alumni_id = models.AutoField(primary_key=True)
 
-    roll_num = models.IntegerField(blank=True, unique=True)
+    first_name = models.CharField(default="", max_length=20)
+    last_name = models.CharField(default="", max_length=20)
+    email = models.EmailField(default="")
 
     branch = models.ForeignKey(Branches, on_delete=models.SET_NULL, null=True)
     course = models.ForeignKey(Courses, on_delete=models.SET_NULL, null=True)
+    roll_num = models.IntegerField(blank=True)
 
-    passing_year = models.IntegerField(blank=False)
+    passing_year = models.IntegerField(blank=False, 
+        validators=[MaxValueValidator(datetime.now().year), MinValueValidator(1990)]
+    )
     contact_number = models.CharField(blank=False, max_length=13)
 
     join = models.DateTimeField(auto_now_add=True)
+    pro_pic = models.ImageField(upload_to="photos/profile_pic", verbose_name="Profile Pic", null=True)
     bio = models.CharField(max_length=350, default="")
-    pro_pic = models.ImageField(upload_to="photos/profile_pic", verbose_name="DP", null=True)
+    user_name = models.CharField(default="", max_length=20)
 
-    blockList = models.ManyToManyField('Alumni', blank=True)
+    blockList = ArrayField(models.IntegerField(), blank=True, null=True, default=[])
+
+    def __str__(self):
+        return (self.first_name + " " + self.last_name + " " + self.user.username)
 
 # model for post
 class Post(models.Model):
@@ -43,9 +60,15 @@ class Post(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True, blank=True)
     content = models.TextField()
 
+    def __str__(self):
+        return self.title
+
 class Images(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, default=None, null=True)
     image = models.ImageField(upload_to="photos/%Y/%m/%d/", verbose_name='Image')
+
+    def __str__(self):
+        return ("Image linked to: " + self.post.title)
 
 # model for job
 class Job(models.Model):
@@ -57,6 +80,9 @@ class Job(models.Model):
     contact = models.CharField(max_length=50)
     timestamp= models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.title
+
 # model for event
 class Event(models.Model):
     event_id = models.AutoField(primary_key=True)
@@ -64,8 +90,12 @@ class Event(models.Model):
     location = models.CharField(max_length=20)
     timestamp = models.DateTimeField()
     duration = models.CharField(max_length=20)
-    content = models.CharField(max_length=400)
+    content = models.TextField()
     contact = models.CharField(max_length=100)
+    subscribed = ArrayField(models.IntegerField(), blank=True, null=True)
+
+    def __str__(self):
+        return self.event_name
 
 # model for message
 class Message(models.Model):

@@ -5,19 +5,31 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django import forms
-from .models import Alumni, Courses, Branches, Images, Post, Job
+from .models import Alumni, Courses, Branches, Images, Post, Job, Event
 from django.forms import formset_factory
 from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 # Create your views here.
 @login_required
 def index(request):
 
-    posts = Post.objects.all().order_by('timestamp')[:10]
+    posts = Post.objects.all().order_by('timestamp')
 
+    filtered_posts = []
+
+    current_alum = get_object_or_404(Alumni, user__id=request.user.id)
+
+    for post in posts:
+        if post.author.user.id not in current_alum.blockList:
+            filtered_posts.append(post)
+    
     return render(request, 'alumni/index.html', {
         'title': 'Dashboard',
-        'posts': posts
+        'posts': filtered_posts
         })
 
 @login_required
@@ -36,29 +48,18 @@ def my_posts(request):
     })
 
 def register(request):
-    """
-    If request type is POST -> Process the form
-    If request type is GET -> render the registration page
-    """
     if request.method == 'POST':
-        form = AlumniRegistrationForm(request.POST)
-        error = ""
+        form = AlumniRegistrationForm(request.POST, request.FILES)
 
         if form.is_valid():
             alumniData = form.cleaned_data
-
-            first_name     = alumniData['first_name']
-            last_name      = alumniData['last_name']
-            roll_num       = alumniData['roll_num']
-            passing_year   = alumniData['passing_year']
-            contact_number = alumniData['contact_number']
-            branch         = Branches.objects.get(branch_name=alumniData['branch'])
-            course         = Courses.objects.get(course_name=alumniData['course'])
 
             user_name      = alumniData['user_name']
             password       = alumniData['password']
             confirm_pass   = alumniData['confirm_password']
             email          = alumniData['email']
+
+            dp             = request.FILES['pro_pic']
 
             if password != confirm_pass:
                 error = "Passwords don't match"
@@ -71,35 +72,64 @@ def register(request):
             if not (User.objects.filter(username=user_name).exists() or
                 User.objects.filter(email=email).exists()):
                 
-                User.objects.create_user(
-                    user_name, email, password, 
-                    first_name=first_name, last_name=last_name)
-
-                a_user = authenticate(username=user_name, passwordd=password)
+                User.objects.create_user(user_name, email, password)
 
                 user = User.objects.get(email=email)
 
-
-                al = Alumni.objects.create(
-                    user           = user,
-                    roll_num       = roll_num,
-                    branch         = branch,
-                    course         = course,
-                    passing_year   = passing_year,
-                    contact_number = contact_number
-                )
+                al = form.save(commit=False)
+                al.user = user
+                al.save()
 
                 return HttpResponseRedirect('/')
             else:
-                error = "Username or email already exists"
-                return render(request, 'alumni/register.html', {
-                    'form': form, 
-                    'title': 'Register', 
-                    'error': error
-                })
+                uid = None
+                if 'uid' in request.POST and request.POST['uid'] == request.user.id:
+                    import pdb
+                    pdb.set_trace()
+                    uid = request.POST['uid']
+                    user = User.objects.get(id=uid)
+                    passwordForm = PasswordChangeForm(request.user, request.POST)
+
+                    if passwordForm.is_valid():
+                        user = passwordForm.save()
+                        update_session_auth_hash(request, user)
+                    
+                    return HttpResponseRedirect("/")
+                else:
+                    error = "Username or email already exists"
+                    return render(request, 'alumni/register.html', {
+                        'form': form, 
+                        'title': 'Register', 
+                        'error': error
+                    })
+        else:
+            error = form.errors
+            return render(request, 'alumni/register.html', {
+                'form': form, 
+                'title': 'Register', 
+                'error': error
+            })
+
     else:
-        form = AlumniRegistrationForm()
-        return render(request, 'alumni/register.html', {'form': form, 'title': 'Register'})
+        title = 'Create Profile'
+        uid = None
+        if 'uid' in request.GET:
+            uid = int(request.GET['uid'])
+            if uid != request.user.id:
+                uid = None
+
+        if uid:
+            alumni = Alumni.objects.get(user=request.user)
+            form = AlumniRegistrationForm(instance=alumni)
+            title = 'Edit Profile'
+        else:
+            form = AlumniRegistrationForm()
+
+        return render(request, 'alumni/register.html', {
+            'form': form, 
+            'title': title,
+            'uid': uid
+        })
 
 @login_required
 def search(request):
@@ -111,8 +141,6 @@ def search(request):
 
         if form.is_valid():
             search_data = form.cleaned_data
-
-
 
         return render(request, 'alumni/search.html', {
             'title': 'Search Results',
@@ -251,19 +279,36 @@ def jobs(request):
         'jobs': jobs
     })
 
+@login_required
 def block_user(request):
     """
     add the user to block list
     """
-    return HttpResponse("BLOCK USER VIEW")
+    if 'uid' in request.GET:
+        blocked_uid = request.GET['uid']
+        try:
+            blocked_user = User.objects.get(id=blocked_uid)
+        except:
+            return HttpResponseRedirect("/")
 
-def handle_post(request):
-    """
-    one end point to add/edit/delete blog post
+    current_alumni = get_object_or_404(Alumni, user__id=request.user.id)
 
-    can have separate function calls to
-    """
-    return HttpResponse("HANDLE POST VIEW")
+    if blocked_uid not in current_alumni.blockList:
+        current_alumni.blockList.append(blocked_uid)
+        current_alumni.save()
+
+    return HttpResponseRedirect("/")
+
+def delete(request):
+    if 'pid' in request.GET:
+        post = get_object_or_404(Post, post_id=request.GET['pid'])
+
+        post_author = post.author
+        current_alum = Alumni.objects.get(user=request.user)
+
+        if post_author == current_alum:
+            post.delete()
+        return HttpResponseRedirect("/myposts")
 
 def report_offensive(request):
     """
@@ -284,13 +329,28 @@ def subscribe_post(request):
     """
     subscribe to an event/post
     """
-    return HttpResponse("SUBS POST VIEW")
+    if 'eid' in request.GET:
+        event = get_object_or_404(Event, event_id=request.GET['eid'])
+
+        uid = request.user.id
+        if uid not in event.subscribed:
+            event.subscribed.append(uid)
+        event.save()
+        return HttpResponseRedirect('/events')
 
 def unsubscribe_post(request):
     """
     unsubscribe from an event/post
     """
-    return HttpResponse("UNSUBS POST VIEW")
+    if 'eid' in request.GET:
+        event = get_object_or_404(Event, event_id=request.GET['eid'])
+
+        uid = request.user.id
+
+        if uid in event.subscribed:
+            event.subscribed.remove(uid)
+        event.save()
+        return HttpResponseRedirect('/events')
 
 def add_job(request):
     if request.method == "POST":
@@ -318,7 +378,37 @@ def add_job(request):
             })
 
 
+@login_required
 def events(request):
+    events = Event.objects.all()
+
+    return render(request, 'alumni/events.html', {
+        'events': events,
+        'title': 'Alumni Events'
+    })
+
+@login_required
+def my_events(request):
+    curr_uid = request.user.id
+    events = Event.objects.filter(subscribed__contains=[curr_uid])
+
+    return render(request, 'alumni/events.html', {
+        'events': events,
+        'title': 'Your Events'
+    })
+
+@login_required
+def block_list(request):
     """
     """
-    return HttpResponse("EVENTS VIEW")
+    current_alum = get_object_or_404(Alumni, user__id=request.user.id)
+
+    blocked_users = current_alum.blockList
+
+    blocked = Alumni.objects.filter(user__id__in=blocked_users)
+
+    
+
+@login_required
+def unblock(request):
+    return HttpResponseRedirect("/")

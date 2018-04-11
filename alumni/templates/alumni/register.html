@@ -6,10 +6,13 @@
 <div>
     {{ error }}
 </div>
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <table class="table">
     {{ form.as_table }}
+    {% if uid %}
+    <input style="visibility: hidden;" type="text" name="uid" value="{{ uid }}">
+    {% endif %}
     </table>
     <button class="btn btn-primary" type="submit">Submit</button>
 </form>

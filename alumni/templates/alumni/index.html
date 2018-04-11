@@ -25,12 +25,12 @@
     {% if not my_posts %}
     <div class="panel-footer">
         Don't like this post? 
-        <a href="block?by={{ request.user }}&&block={{ post.author.user }}">Block User</a> or 
+        <a href="block?uid={{ post.author.user.id }}">Block User</a> or 
         <a href="report/{{ post.post_id }}">Report Post</a>
     </div>
     {% else %}
     <div class="panel-footer">
-        <a href="delete?pid={{ post.post_id }}">Delete Post</a>
+        <a href="deletepost?pid={{ post.post_id }}">Delete Post</a>
         <br>
         <a href="editpost?pid={{ post.post_id }}">Edit Post</a>
     </div>
