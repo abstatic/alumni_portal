@@ -1,21 +1,24 @@
 {% extends 'alumni/base.html' %}
 
 {% block content %}
+{% if my_posts %}
+<h2>Posts by you- </h2>
+{% endif %}
 {% for post in posts %}
 <div class="panel panel-info">
     <div class="panel-heading">
         <a href="post?pid={{ post.post_id }}"><h3>{{ post.title }}</h3></a>
             <p class="text-muted">
                 <a href="users?uid={{ post.author.user.id }}">
-                    {{ post.author.user.first_name }} 
-                    {{ post.author.user.last_name }}
+                    {{ post.author.first_name }} 
+                    {{ post.author.last_name }}
                 </a>
                 on
                 {{ post.timestamp }}
             </p>
     </div>
     <div class="panel-body"> 
-        {{ post.content }}
+        {{ post.content|truncatechars:256 }}
     </div>
     
     {% for img in post.images_set.all %}
@@ -23,17 +26,19 @@
     {% endfor %}
 
     {% if not my_posts %}
-    <div class="panel-footer">
-        Don't like this post? 
-        <a href="block?uid={{ post.author.user.id }}">Block User</a> or 
-        <a href="report/{{ post.post_id }}">Report Post</a>
-    </div>
+        {% ifnotequal post.author.user.id request.user.id %}
+            <div class="panel-footer">
+                Don't like this post? 
+                <a href="block?uid={{ post.author.user.id }}">Block User</a> or 
+                <a href="report?pid={{ post.post_id }}" onclick="alert('Post Reported');">Report Post</a>
+            </div>
+        {% endifnotequal %}
     {% else %}
-    <div class="panel-footer">
-        <a href="deletepost?pid={{ post.post_id }}">Delete Post</a>
-        <br>
-        <a href="editpost?pid={{ post.post_id }}">Edit Post</a>
-    </div>
+        <div class="panel-footer">
+            <a href="deletepost?pid={{ post.post_id }}">Delete Post</a>
+            <br>
+            <a href="editpost?pid={{ post.post_id }}">Edit Post</a>
+        </div>
     {% endif %}
 </div>
 <br><br>

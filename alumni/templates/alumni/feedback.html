@@ -1,0 +1,12 @@
+{% extends 'alumni/base.html' %}
+
+{% block content %}
+<h2>Feedback Form</h2>
+<form method="POST">
+    {% csrf_token %}
+    <table class="table">
+        {{ form.as_table }}
+    </table>
+    <button class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

@@ -35,17 +35,17 @@ class Alumni(models.Model):
 
     branch = models.ForeignKey(Branches, on_delete=models.SET_NULL, null=True)
     course = models.ForeignKey(Courses, on_delete=models.SET_NULL, null=True)
-    roll_num = models.IntegerField(blank=True)
+    roll_num = models.IntegerField(blank=True, null=True, default=0)
 
     passing_year = models.IntegerField(blank=False, 
         validators=[MaxValueValidator(datetime.now().year), MinValueValidator(1990)]
     )
-    contact_number = models.CharField(blank=False, max_length=13)
+    contact_number = models.CharField(blank=True, max_length=13, default=0)
 
     join = models.DateTimeField(auto_now_add=True)
     pro_pic = models.ImageField(upload_to="photos/profile_pic", verbose_name="Profile Pic", null=True)
-    bio = models.CharField(max_length=350, default="")
-    user_name = models.CharField(default="", max_length=20)
+    bio = models.CharField(max_length=350, default="", blank=True)
+    user_name = models.CharField(default="", max_length=20, unique=True, blank=False)
 
     blockList = ArrayField(models.IntegerField(), blank=True, null=True, default=[])
 
@@ -97,10 +97,23 @@ class Event(models.Model):
     def __str__(self):
         return self.event_name
 
+class Report(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    reported_by = models.ForeignKey(Alumni, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return (self.post.title + " reported by " + 
+        self.reported_by.first_name + " " + self.reported_by.last_name)
+
 # model for message
 class Message(models.Model):
     msg_id = models.AutoField(primary_key=True)
-    content = models.CharField(max_length=300)
+    message_by = models.ForeignKey(Alumni, on_delete=models.CASCADE, null=True)
+    topic = models.CharField(max_length=100, default="def", blank=False)
+    content = models.TextField()
+
+    def __str__(self):
+        return self.topic
 
 admin.site.register(Message)
 admin.site.register(Event)
@@ -110,3 +123,4 @@ admin.site.register(Alumni)
 admin.site.register(Images)
 admin.site.register(Courses)
 admin.site.register(Branches)
+admin.site.register(Report)

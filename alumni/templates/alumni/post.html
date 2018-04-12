@@ -1,4 +1,5 @@
 {% extends 'alumni/base.html' %}
+{% load comments %}
 
 {% block content %}
 <div class="panel panel-info">
@@ -6,8 +7,8 @@
         <a href="post?pid={{ post.post_id }}"><h3>{{ post.title }}</h3></a>
             <p class="text-muted">
                 <a href="users?uid={{ post.author.user.id }}">
-                    {{ post.author.user.first_name }} 
-                    {{ post.author.user.last_name }}
+                    {{ post.author.first_name }} 
+                    {{ post.author.last_name }}
                 </a>
                 on
                 {{ post.timestamp }}
@@ -36,4 +37,38 @@
         </div>
     </div>
 </div>
+{% get_comment_list for post as comment_list %}
+<ul class="list-group">
+    {% for comment in comment_list %}
+        <li class="list-group-item">
+            <a href="users?uid={{ comment.user.id }}">{{ comment.user }}: </a>
+            {{ comment.comment }}
+            {% ifequal comment.user.id request.user.id %}
+                <p class="pull-right">
+                    <a href="/deletecomment?cid={{ comment.id }}">
+                        Delete
+                    </a>
+                </p>
+            {% endifequal %}
+        </li>
+        <br>
+    {% endfor %}
+    {% if user.is_authenticated %}
+        {% get_comment_form for post as form %}
+        <form action="{% comment_form_target %}" method="POST">
+            {% csrf_token %}
+            {{ form.comment }}
+            {{ form.content_type }}
+            {{ form.object_pk }}
+            {{ form.timestamp }}
+            {{ form.security_hash }}
+        <br>
+        <br>
+        <input type="hidden" name="next" value="/post?pid={{ post.post_id }}"/>
+        <input type="submit" value="Add comment" id="id_submit" />
+        </form>
+    {% else %}
+        <p>Please <a href="{% url 'auth_login' %}">log in</a> to leave a comment.</p>
+    {% endif %}
+</ul>
 {% endblock %}

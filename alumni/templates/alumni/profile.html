@@ -1,12 +1,13 @@
 {% extends 'alumni/base.html' %}
 
 {% block content %}
+<h2>Profile Page</h2>
 <table class="table">
     <tr>
         <td rowspan="4" class="col-md-3">
             <img width="200px" src="{{ alumni.pro_pic.url }}" alt="">
         </td>
-        <td>{{ alumni.user.first_name }} {{ alumni.user.last_name }}</td>
+        <td>{{ alumni.first_name }} {{ alumni.last_name }}</td>
     </tr>
     <tr>
         <td>{{ alumni.course.course_name }}, {{ alumni.branch.branch_name }}</td>
@@ -17,14 +18,18 @@
     <tr>
         <td>{{ alumni.user.email }}</td>
     </tr>
+    {% if alumni.bio %}
     <tr>
         <td>Bio</td>
-        <td>alumni.bio</td>
+        <td>{{ alumni.bio }}</td>
     </tr>
+    {% endif %}
+    {% if alumni.roll_num %}
     <tr>
         <td>Roll Number</td>
         <td>{{ alumni.roll_num }}</td>
     </tr>
+    {% endif %}
     <tr>
         <td>Joined On</td>
         <td>{{ alumni.join }}</td>

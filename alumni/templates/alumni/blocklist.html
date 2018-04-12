@@ -1,4 +1,18 @@
 {% extends 'alumni/base.html' %}
 
+{% block content %}
+    <h2>Blocked Users</h2>
 
-
+    <div>
+        You have blocked posts from the following users. Click on unblock to see their posts in your feed. You can still visit their profiles
+        <br><br>
+        <ul class="list-group">
+        {% for user in blocklist %}
+            <li class="list-group-item">
+                <a href="users?uid={{ user.user.id }}">{{ user.first_name }} {{ user.last_name }}</a>
+                <a href="unblock?uid={{ user.user.id }}">, Unblock</a>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

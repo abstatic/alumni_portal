@@ -1,17 +1,19 @@
-from .forms import AlumniRegistrationForm, PostForm, JobForm, SearchForm, ImageForm
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from .forms import AlumniRegistrationForm, PostForm, JobForm, SearchForm, ImageForm, FeedBackForm
+from .models import Alumni, Courses, Branches, Images, Post, Job, Event, Report
 from django import forms
-from .models import Alumni, Courses, Branches, Images, Post, Job, Event
-from django.forms import formset_factory
-from django.utils import timezone
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import authenticate, login
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.forms import formset_factory
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.conf import settings
+import django_comments
 
 # Create your views here.
 @login_required
@@ -31,10 +33,6 @@ def index(request):
         'title': 'Dashboard',
         'posts': filtered_posts
         })
-
-@login_required
-def my_jobs(request):
-    pass
 
 @login_required
 def my_posts(request):
@@ -133,18 +131,42 @@ def register(request):
 
 @login_required
 def search(request):
-    """
-    search with the given filters in the request
-    """
     if request.method == "POST":
         form = SearchForm(request.POST)
 
+        qset = Alumni.objects.all()
         if form.is_valid():
             search_data = form.cleaned_data
 
+            branch = search_data['branch']
+            course = search_data['course']
+            passing_year = search_data['passing_year']
+            first_name = search_data['first_name']
+            last_name = search_data['last_name']
+            roll_num = search_data['roll_num']
+            
+            if branch != 'All':
+                qset = qset.filter(branch=branch)
+
+            if course != 'All':
+                qset = qset.filter(course=course)
+
+            if passing_year != 'All':
+                qset = qset.filter(passing_year=passing_year)
+
+            if first_name != 'All':
+                qset = qset.filter(first_name__icontains=first_name)
+
+            if last_name != 'All':
+                qset = qset.filter(last_name__icontains=last_name)
+
+            if roll_num != 0:
+                qset = qset.filter(roll_num=roll_num)
+
         return render(request, 'alumni/search.html', {
             'title': 'Search Results',
-            'search_form': False
+            'search_form': False,
+            'search_res': qset
             })
     else:
         form = SearchForm()
@@ -268,12 +290,8 @@ def profile(request):
     except:
         return HttpResponseRedirect('/')
 
+@login_required
 def jobs(request):
-    """
-    render the jobs page
-    depending on the page num, show relevant jobs
-    Use Cache for fetching
-    """
     jobs = Job.objects.all()[:10]
     return render(request, 'alumni/jobs.html', {
         'jobs': jobs
@@ -310,25 +328,52 @@ def delete(request):
             post.delete()
         return HttpResponseRedirect("/myposts")
 
+@login_required
 def report_offensive(request):
     """
     mark a post as offensive, notify to admin user
     """
-    return HttpResponse("REPORT VIEW")
+    reported_by = get_object_or_404(Alumni, user__id=request.user.id)
 
+    if 'pid' in request.GET:
+        try:
+            pid = int(request.GET['pid'])
+            post = get_object_or_404(Post, post_id=pid)
+        except:
+            return HttpResponseRedirect("/")
+
+    report = Report.objects.get_or_create(reported_by=reported_by, post=post)[0]
+    report.save()
+
+    return HttpResponseRedirect("/")
+
+@login_required
+def my_jobs(self):
+    return HttpResponse("JOBS EDIT")
+
+@login_required
 def give_feedback(request):
-    """
-    send the feedback message to admin user
 
-    GET -> render the feddback page
-    POST -> Handle the feedback
-    """
-    return HttpResponse("GIVE FEEDBACK VIEW")
+    if request.method == "GET":
 
+        form = FeedBackForm()
+
+        return render(request, 'alumni/feedback.html', {
+            'form': form,
+            'title': "Feedback"
+        })
+    else:
+        feedbackform = FeedBackForm(request.POST)
+
+        if feedbackform.is_valid():
+            feedbackform_inst = feedbackform.save(commit=False)
+            feedbackform_inst.message_by = Alumni.objects.get(user=request.user)
+            feedbackform_inst.save()
+
+        return HttpResponseRedirect("/")
+        
+@login_required
 def subscribe_post(request):
-    """
-    subscribe to an event/post
-    """
     if 'eid' in request.GET:
         event = get_object_or_404(Event, event_id=request.GET['eid'])
 
@@ -338,6 +383,7 @@ def subscribe_post(request):
         event.save()
         return HttpResponseRedirect('/events')
 
+@login_required
 def unsubscribe_post(request):
     """
     unsubscribe from an event/post
@@ -352,6 +398,7 @@ def unsubscribe_post(request):
         event.save()
         return HttpResponseRedirect('/events')
 
+@login_required
 def add_job(request):
     if request.method == "POST":
         job_form = JobForm(request.POST, prefix="job")
@@ -377,7 +424,6 @@ def add_job(request):
             'title': 'Add Job',
             })
 
-
 @login_required
 def events(request):
     events = Event.objects.all()
@@ -399,16 +445,45 @@ def my_events(request):
 
 @login_required
 def block_list(request):
-    """
-    """
     current_alum = get_object_or_404(Alumni, user__id=request.user.id)
 
     blocked_users = current_alum.blockList
 
     blocked = Alumni.objects.filter(user__id__in=blocked_users)
 
-    
+    return render(request, 'alumni/blocklist.html', {
+        'blocklist': blocked,
+        'title': "Blocked Users"
+    })
 
 @login_required
 def unblock(request):
-    return HttpResponseRedirect("/")
+    current_alumni = get_object_or_404(Alumni, user__id=request.user.id)
+    if 'uid' in request.GET:
+        try:
+            blocked_uid = int(request.GET['uid'])
+            blocked_user = User.objects.get(id=blocked_uid)
+        except:
+            if blocked_uid in current_alumni.blockList:
+                current_alumni.blockList.remove(blocked_uid)
+                current_alumni.save()
+            return HttpResponseRedirect("/myblocked")
+
+
+    if blocked_uid in current_alumni.blockList:
+        current_alumni.blockList.remove(blocked_uid)
+        current_alumni.save()
+
+    return HttpResponseRedirect("/myblocked")
+
+@login_required
+def delete_own_comment(request):
+    message_id = request.GET['cid']
+    comment = get_object_or_404(django_comments.get_model(), pk=message_id,
+            site__pk=settings.SITE_ID)
+    if comment.user == request.user:
+        comment.is_removed = True
+        comment.save()
+
+    return redirect(request.META['HTTP_REFERER'])
+    

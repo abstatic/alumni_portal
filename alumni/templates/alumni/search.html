@@ -17,5 +17,14 @@
 
 {% else %}
 <h1>Search Results</h1>
+<ul class="list-group">
+{% for res in search_res %}
+    <li class="list-group-item">
+        <a href="users?uid={{ res.user.id }}">
+            {{ res.first_name }} {{ res.last_name }}
+        </a>
+    </li>
+{% endfor %}
+</ul>
 {% endif %}
 {% endblock %}
