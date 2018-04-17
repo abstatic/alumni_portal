@@ -1,0 +1,15 @@
+{% extends './codes_edited.html' %}
+
+{% block content %}
+<body>
+    <form  method="POST">
+     <div class="form-group">
+
+         {{form.as_p}}
+         {% csrf_token %}
+         <input type="submit" name="btn btn-primary" value="Update">
+
+         </div>
+     </form>
+</body>
+{% endblock %}
