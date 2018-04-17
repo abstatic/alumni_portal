@@ -12,6 +12,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.password_validation import validate_password
 
 # Create your views here.
 @login_required
@@ -63,6 +64,16 @@ def register(request):
 
             if password != confirm_pass:
                 error = "Passwords don't match"
+                return render(request, 'alumni/register.html', {
+                    'form': form, 
+                    'title': 'Register', 
+                    'error': error
+                })
+
+            try:
+                validate_password(password)
+            except ValidationError:
+                error = "Password length must be at least 8 and should have at least one non-numeric character"
                 return render(request, 'alumni/register.html', {
                     'form': form, 
                     'title': 'Register', 
