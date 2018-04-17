@@ -1,0 +1,136 @@
+
+{% load staticfiles %}
+
+<!DOCTYPE html>
+
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>IIIT-H</title>
+<!--css-->
+<link href="{% static 'AlumniManagement/css/bootstrap.css' %}" rel="stylesheet" type="text/css" media="all">
+<link href="{% static 'AlumniManagement/css/style.css' %}" rel="stylesheet" type="text/css" media="all">
+<!--css-->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="keywords" content="Studies Plus Responsive web template, Bootstrap Web Templates, Flat Web Templates, Android Compatible web template, 
+Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony Ericsson, Motorola web design">
+<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+<!--js-->
+<script src="{% static 'AlumniManagement/js/jquery.min.js' %}"></script>
+<script src="{% static 'AlumniManagement/js/bootstrap.min.js' %}"></script>
+<!--js-->
+<!--webfonts-->
+<link href="file://fonts.googleapis.com/css?family=Cagliostro" rel="stylesheet" type="text/css">
+<link href="file://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic" rel="stylesheet" type="text/css">
+<!--webfonts-->
+</head>
+<body>
+	<!--header-->
+		<div class="header">
+			
+			<div class="container">
+				<nav class="navbar navbar-default">
+					<div class="container-fluid">
+						<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+
+								<ul class="nav navbar-nav">
+									 <li class="dropdown">
+
+										   <a href="index.html" class="dropdown-toggle" data-hover="Home" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Home <span class="caret"></span></a>
+												<ul class="dropdown-menu">
+                           						 <li><a href="#">Alumni</a></li>
+                          						  <li><a href="#">Student</a></li>
+													<li><a href="#">Faculty</a></li>
+                            						<li><a href="#">Admin</a></li>
+                        							</ul>
+									</li>
+									<li><a href="about.html"><span data-hover="About">About</span></a></li>
+									<li><a href="services.html"><span data-hover="Services">Services</span></a></li>
+									<li><a href="projects.html"><span data-hover="Projects">Projects</span></a></li>	
+									<li><a href="courses.html"><span data-hover="Courses">Courses</span></a></li>
+									<li class="active"><a href="codes.html"><span data-hover="Codes">Codes</span></a></li>
+									<li><a href="contact.html"><span data-hover="Contact">Contact</span></a></li>
+
+								</ul>
+									</div>
+									</div>
+							</nav>
+						</div>
+					</div>
+				</nav>
+			</div>
+		</div>
+	<!--header-->
+		<div class="banner-w3agile">
+			<div class="container">
+				
+			</div>
+		</div>
+		<!--content-->
+		<div class="content">
+			<!--typography-page -->
+				<div class="typo-w3">
+					<div class="container">
+
+						{% block content %}
+						
+						{% endblock %}
+
+                    </div>
+				</div>
+			<!-- //typography-page -->
+
+		</div>
+		<!--content-->
+
+		<!--footer-->
+			<div class="footer-w3">
+				<div class="container">
+					<div class="footer-grids">
+						<div class="col-md-4 footer-grid">
+							<h4>About Us</h4>
+							<p>
+
+							</p>
+						</div>
+						<div class="col-md-4 footer-grid">
+						<h4>Recent Events</h4>
+							<div class="footer-grid1">
+								<img src="{% static 'AlumniManagement/images/w1.jpg' %}" alt=" " class="img-responsive">
+							</div>
+							<div class="footer-grid1">
+								<img src="{% static 'AlumniManagement/images/w2.jpg' %}" alt=" " class="img-responsive">
+							</div>
+							<div class="footer-grid1">
+								<img src="{% static 'AlumniManagement/images/w4.jpg' %}" alt=" " class="img-responsive">
+							</div>
+							<div class="footer-grid1">
+								<img src="{% static 'AlumniManagement/images/w5.jpg' %}" alt=" " class="img-responsive">
+							</div>
+							<div class="footer-grid1">
+								<img src="{% static 'AlumniManagement/images/w6.jpg' %}" alt=" " class="img-responsive">
+							</div>
+							<div class="footer-grid1">
+								<img src="{% static 'AlumniManagement/images/w2.jpg' %}" alt=" " class="img-responsive">
+							</div>
+							<div class="clearfix"> </div>
+						</div>
+						<div class="col-md-4 footer-grid">
+						<h4>Information</h4>
+							<ul>
+								<li><i class="glyphicon glyphicon-map-marker" aria-hidden="true"></i>139 Diamond Road, New York City, USA.</li>
+								<li><i class="glyphicon glyphicon-earphone" aria-hidden="true"></i>1 599-033-5036</li>
+								<li><i class="glyphicon glyphicon-envelope" aria-hidden="true"></i><a href="mailto:example@mail.com"> example@mail.com</a></li>
+								<li><i class="glyphicon glyphicon-time" aria-hidden="true"></i>Mon-Sat 09:00 am to 16:00 pm</li>
+							</ul>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+			</div>
+			
+
+
+</body>
+
+	</html>
